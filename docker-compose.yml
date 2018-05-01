@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  aws-sam-local:
+    image: xevo/aws-sam-local
+    command: local start-api --host 0.0.0.0 --port 3001 --docker-volume-basedir "$PWD/backend"
+    ports:
+      - '3001:3001'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./backend:/var/opt
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4567-4583:4567-4583"
+      - "${PORT_WEB_UI-8080}:${PORT_WEB_UI-8080}"
+    environment:
+      - SERVICES=dynamodb,dynamodbstreams,elasticsearch,s3,sns,sqs,ses
+      - DEBUG=${DEBUG- }
+      - DATA_DIR=${DATA_DIR- }
+      - PORT_WEB_UI=${PORT_WEB_UI- }
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR- }
+      - KINESIS_ERROR_PROBABILITY=${KINESIS_ERROR_PROBABILITY- }
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "./data/tmp/localstack:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ./frontend/Dockerfile
+    command: npm start
+    volumes:
+      - './frontend:/usr/src/app'
+      - '/usr/src/app/node_modules'
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - aws-sam-local
+      - localstack
