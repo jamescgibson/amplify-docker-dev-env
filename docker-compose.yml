@@ -9,6 +9,13 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend:/var/opt
+  moto:
+    build:
+      context: ./moto
+      dockerfile: Dockerfile
+    command:  moto_server cognitoidentity -p 4001
+    ports:
+      - "4001:4001"
   localstack:
     image: localstack/localstack
     ports:
@@ -28,7 +35,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: ./frontend/Dockerfile
+      dockerfile: Dockerfile
     command: npm start
     volumes:
       - './frontend:/usr/src/app'
@@ -40,3 +47,4 @@ services:
     depends_on:
       - aws-sam-local
       - localstack
+      - moto
