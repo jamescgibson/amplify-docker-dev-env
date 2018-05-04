@@ -1,6 +1,18 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
+import Amplify from 'aws-amplify';
+import { withAuthenticator } from 'aws-amplify-react';
 import './App.css';
+
+Amplify.configure({
+  Auth: {
+    identityPoolId: '',
+    region: '',
+    userPoolId: '',
+    userPoolWebClientId: '',
+      mandatorySignIn: false
+  }
+});
 
 class App extends Component {
   render() {
@@ -18,4 +30,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default withAuthenticator(App);
